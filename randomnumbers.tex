@@ -1,0 +1,99 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[margin=1in]{geometry}
+\begin{document}
+\title{Random Numbers}
+\author{Michael Li, Kebing Li, and Luke O'Connell}
+\maketitle
+People have been interested in random events for thousands of years. The first ideas surrouding chance led them to believe that it was tied to fate. Therefore, many threw dice to determine one's fate. Three thousand years ago, mathematicians in China became the first in the world to formalize the concepts of odds and chance. It wasn't until the 16th century that mathematicians in Italy began to formulate the odds associated with certain games of chance.\\\\
+When it comes to random number generators, there are what are known as pseudo-random number generators (PRNGs) and truly random number generators (TRNGs). A pseudo-random number generator is an algorithm that outputs a sequence of numbers that approximate the properties of sequences of random numbers. These aren't truly random because the output is determined by a small number of initial properties, known as the prng's seed. Although these don't produce truly random numbers, they are quite useful due to their speed and production of seemingly random numbers. On the other hand are the TRNGs which, instead of using a deterministic algorithm, measure some thought to be random physical phenomenon and account for mistakes made during measurement.\\
+\\
+One example of a pseudo-random number generating algorithm is the Linear Congruential Generator which is as follows:
+$$X(n+1)=a*X(n)+c (mod m)$$ where a is a multiplier, c is an increment, and m is usually a prime or power of 2.\\
+\\
+One crucial characteristic of a random number generator is its period. This is the number of elements in the outputted sequence that it takes to begin repeating itself. The following theorem lays down parameters that are necessary in order to obtain the maximum period of the sequence of random numbers.\\\\
+Theorem 1: Hull-Dobell theorem:
+\begin{tabbing}
+The period of\= a linear congruential generator has a maximum period, $m$, if and only if:\\
+\>1. $m$ and $c$ are relatively prime\\
+\>2. $a-1$ is divisible by all prime factors of $m$\\
+\>3. $a-1$ is divisible by 4 if $m$ is divisible by 4
+\end{tabbing}
+Therefore, in order to maximize the period of a multiplicative congruential generator, one needs to have a primitive root of the period. This is usually difficult to find, however, the following theorem shows that it is unnecessary.\\\\
+Theorem 2:
+\begin{tabbing}
+When $c=0$, \= $m=p^\alpha$, the sequence of the linear congruential generator has maximal period\\
+ if and only if:\\
+\>1. $x_0$ is relatively prime to $m$\\
+\>2. If $p^\alpha$ is a factor of $m$, with $p$ being odd and alpha as big as possible,\\
+\>   or $p=2$ and $\alpha=\frac{1}{2}$, $a$ must be a primitive root for $p^\alpha$.\\
+\>3. If $2^\alpha$ is a factor of $m$, $\alpha>2$. $a$ must belong to $2^{\alpha-2}$. 
+\end{tabbing}
+The simplest python code for a Linear Congruential Generator takes less than ten lines:
+\begin{tabbing}
+def \= lcg(modulus, a, c, seed=None):\\
+\> if s\=eed != None:\\
+\> \> lcg.previous = seed\\
+\> random\_number = (lcg.previous*a+c)\%modulus\\
+\> lcg.previous = random\_number\\
+\> return random\_number
+If the modulus, seed, and a are properly selected, the linear congruential generator will have\\
+a substantially large period and the elements of the produced sequence will be distributed across\\
+the entire  modulus field.\\\\
+Another important example of a pseudo-random number generator is a linear recurrence\\
+generator. The most successful example of this is the Mersenne Twister core generator, which\\
+has a period equal to $2^{19337-1}$. This PRNG is used in c++, python, java, and many other\\
+places. The alg\=orithm is characterized by these quantities:\\
+\>w: word size (in number of bits)\\
+\>n: degree of recurrence\\
+\>m: middle word, an offset used in the recurrence relation defining the series\\
+\> $x$, $1$ $\leq$ $m$ $<$ $n$\\
+\>r: separation point of one word, or the number of bits of the lower bitmask,\\
+\> $0$ $\leq$ $r$ $\leq$ $w-1$\\
+\>a: coefficients of the rational normal form twist matrix\\\\
+The series $x$ is then defined as a series of w-bit quantities with the recurrence relation:\\
+\>$x_{k+n}$ := $x_{k+m}$ $\oplus$  (($x_k^u$ $\Vert$ $x_{k+1}^l$)A)       k=0,1,...
+\end{tabbing}
+where $\Vert$ denotes concatenation of bit vectors, $\oplus$ the bitwise exclusive or operation (which returns a one in each bit position for which the corresponding bits of either but not both operands are ones), $x_k^u$ means the upper $w-r$ bits of $x_k$, and $x_{k+1}^l$ means the lower r bits of $x_{k+1}$. A stands for the twist transformation and is defined in rational normal form as:\\
+
+\[
+   A=
+  \left[ {\begin{array}{cc}
+   0 & I_{w-1} \\
+   a_{w-1} & (a_{w-2},...,a_0) \\
+  \end{array} } \right]
+\]
+\\
+The question here then becomes why we actually need random numbers? A good example in the real world would be the 1969 military draft lottery. The story here is that the Selective Service organized a lottery to decide which boy would be drafted into the military, and they decided to draft people by randomly selecting people by their birthdates. The officer first put each piece of paper into each capsule with a calendar day written on it, and he dropped it into a large bin. Then, he stuck his hand into the bin and mixed things up for a few seconds. Finally, the officer reached in and pulled out a capsule and named it \#1, and then pulled out the \#2 capsule, until the last one, named \#366. These numbers determined the order in which people would be drafted and sent to Vietnam. However, people noticed that people born in latter months of year tended to be assigned lower numbers, and therefore sent to Vietnam. After statistical analysis, people actually found out that the correlation between date of birth and draft number was -0.28, which was statistically significant, meaning that this lottery turned out to be unfair because a truly random lottery would give correlation as close to zero as possible. The reason why this happened is because when putting the birthdates into the bin in sequence and insufficiently mixing them up, they increased the likelihood the last days put in were most be likely to be the one first grabbed. Even if the officer intentionally tried to select capsules from the bottom, his hand probably pushed the top capsules down into the pile as he plunged it in. Therefore, this lottery was unfair, and we really need random to prevent this kind of thing from happening.\\\\
+One thing that builders of TRNGs often discuss is whether the physical phenomenon used should be a quantum phenomenon or a phenomenon with chaotic behavior. There is some disagreement about whether quantum phenomena are better or not, and it turns out that all of these lead to our belief of how the universe actually works. The key question here is whether the universe is deterministic or not, or whether everything that happens is predetermined since the Big Bang. Determinism is a really difficult subject to test or argue and there’re quite a lot of philosophical inquiries, but the problem is still far from clear.
+Then, let us talk about quantum phenomena and chaotic behaviors. Quantum mechanics is a branch of theoretical physics that mathematically describes the universe at the atomic and subatomic levels. Random number generators based on quantum physics use the fact that subatomic particles appear to behave randomly in certain circumstances. We know very little about the causes of those circumstances, and therefore they are believed by many to be nondeterministic.\\\\
+In comparison, chaotic systems are those in which small changes in the initial conditions will result in dramatic changes of the overall behavior of the system. Butterfly effect, a thought experiment in which a butterfly beating its wings in Brazil is able to affect the winds just enough to cause a tornado in Texas, is a good example of a chaotic system. Comparing to quantum physics, this system is actually more like deterministic since it relies on differential equations.
+Therefore, proponents of random number generators using quantum mechanics argue that quantum physics is inherently nondeterministic, whereas systems governed by physics are essentially deterministic. However, these arguments are useless in our contemporary era. Take RANDOM.ORG as an example, you could argue that the atmospheric noise used as a source for the random numbers can be viewed as a chaotic and deterministic system. Hence, if you know enough about the processes that cause atmospheric noise you can potentially predict the numbers generated by RANDOM.ORG.\\\\
+However, to do this, you would probably need too much knowledge since you need to know the position and velocity of every single molecule in the planet's weather systems. This is of course infeasible and impossible, and the inaccuracy of weather forecasts is a good example of how difficult it is to give even a rough estimate of the behavior of weather systems. For this reason, it is impractical to predict random numbers from RANDOM.ORG, even if it is deterministic.\\\\
+Therefore, the most meaningful definition of randomness is that which cannot be predicted by humans. While quantum random number generators can certainly generate true random numbers, they for all intents and purposes are equivalent to approaches based on complex chaotic systems.\\\\
+The following tests are designed to use to test the randomness of certain PRNGs.\\
+Spectral test: The spectral test is a statistical test for the quality of a class of pseudorandom number generators (PRNGs), the linear congruential generators. LCGs have a property that when plotted in 2 or more dimensions, lines or hyperplanes will form, on which all possible outputs can be found. The spectral test compares the distance between these planes. The further apart they are, the worse the generator is. As this test is devised to study the lattice structures of LCGs, it cannot be applied to other families of PRNGs.\\
+Diehard Test: Test for general pseudo-random generators, but not quite good.\\
+Birthday spacings: Choose random points on a large interval. The spacings between the points should be asymptotically exponentially distributed. The name is based on the birthday paradox.\\
+Overlapping permutations: Analyze sequences of five consecutive random numbers. The 120 possible orderings should occur with statistically equal probability.\\
+Monkey tests: Treat sequences of some number of bits as "words". Count the overlapping words in a stream. The number of "words" that do not appear should follow a known distribution. The name is based on the infinite monkey theorem.\\
+K-distribution test: \begin{tabbing}A pseudorandom sequence $x_i$ of w-bit integers of period P is said to k-distributed\\
+ to v-bit acc\=uracy if the following holds:\\\\
+\> Let $trunc_y(x)$\= denote the number formed by the leading v-bits of x, and\\
+\> consider P of the kv-bit vectors\\\\
+\>\> $(trunc_y(x(i)),trunc_y(x(i+1)),...,trunc_y(x(i+k-1)))$\\\\
+\> Then each of the $2^{kv}$ possible combinations of bits occurs the same number\\
+\> of times in a period, except for the all-zero combination that occurs once\\
+\> less often.\end{tabbing}
+\begin{center}
+References
+\end{center}
+http://faculty.rhodes.edu/wetzel/random/mainbody.html\\
+https://www.cs.auckland.ac.nz/~chaitin/ait/index.html\\
+http://faculty.rhodes.edu/wetzel/random/intro.html\\
+https://en.wikipedia.org/wiki/Spectral\_test\\
+https://en.wikipedia.org/wiki/Diehard\_tests\\
+https://en.wikipedia.org/wiki/History\_of\_randomness\\
+https://www.random.org/randomness
+\end{document}
